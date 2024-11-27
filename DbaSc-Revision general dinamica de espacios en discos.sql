@@ -88,9 +88,9 @@ exec xp_fixeddrives
 IF object_id('tempdb.dbo.#espacio', 'U') IS NOT NULL
 	DROP TABLE #espacio
 
-select a.DISCO as disco, b.tamaño_gb, 
+select a.DISCO as disco, b.tamaï¿½o_gb, 
 	cast(a.MB_LIBRES/1024.00 as numeric(18,2)) as libre_gb, 
-	cast(((a.MB_LIBRES/1024.00)/b.tamaño_gb) * 100 as numeric(18,2)) as [libre %]
+	cast(((a.MB_LIBRES/1024.00)/b.tamaï¿½o_gb) * 100 as numeric(18,2)) as [libre %]
 	into #espacio
 from #fixeddrives a
 	left outer join SQLAdmin.dba.disco b on a.DISCO = b.disco
@@ -154,7 +154,7 @@ from #espacio a
 
 select *
 from #discos
-where libre_gb < 30 and (libre_gb / tamaño_gb) < 0.2
+where libre_gb < 30 and (libre_gb / tamaï¿½o_gb) < 0.2
 order by libre_gb
 
 --======================================================================================================
@@ -178,15 +178,15 @@ select disco, isnull([ROWS], 0) as data_gb, isnull([LOG], 0) as log_gb
 into #sql
 from (
 select substring(RutaArchivo, 1,1) as disco, Tipo,
-	cast(sum(SizeArchivo) / 1024.00 as numeric(18,2)) as tamaño_gb--,
+	cast(sum(SizeArchivo) / 1024.00 as numeric(18,2)) as tamaï¿½o_gb--,
 	--cast(sum(EspacioLiberar) / 1024.00 as numeric(18,2)) as a_liberar_gb
 from #datafiles
 group by substring(RutaArchivo, 1,1), Tipo
---order by disco, tamaño_gb desc
+--order by disco, tamaï¿½o_gb desc
 ) as t
 pivot
 (
-max(tamaño_gb) for Tipo in([ROWS], [LOG]) 
+max(tamaï¿½o_gb) for Tipo in([ROWS], [LOG]) 
 ) as pvt1
 
 --======================================================================================================
@@ -196,18 +196,18 @@ IF object_id('tempdb.dbo.#discos', 'U') IS NOT NULL
 
 select a.*, 
 	isnull(b.data_gb, 0 ) as data_gb, isnull(b.log_gb, 0) as log_gb,
-	case when a.[tamaño_gb] is not null then a.tamaño_gb - (a.libre_gb + isnull(b.data_gb, 0) + isnull(b.log_gb, 0)) end as no_sql_gb
-	--a.tamaño_gb - (a.libre_gb + b.data_gb + b.log_gb) as no_sql_gb
-	--case when b.data_gb is null and b.log_gb is null and a.[tamaño_gb] is not null and a.libre_gb is not null then a.tamaño_gb - a.libre_gb else 0 end no_sql_gb
+	case when a.[tamaï¿½o_gb] is not null then a.tamaï¿½o_gb - (a.libre_gb + isnull(b.data_gb, 0) + isnull(b.log_gb, 0)) end as no_sql_gb
+	--a.tamaï¿½o_gb - (a.libre_gb + b.data_gb + b.log_gb) as no_sql_gb
+	--case when b.data_gb is null and b.log_gb is null and a.[tamaï¿½o_gb] is not null and a.libre_gb is not null then a.tamaï¿½o_gb - a.libre_gb else 0 end no_sql_gb
 	into #discos
 from #espacio a
 	left outer join #sql b on a.disco = b.disco
 
 --======================================================================================================
 
-select *, cast(libre_gb / tamaño_gb as numeric(18,2)) as [% libre]
+select *, cast(libre_gb / tamaï¿½o_gb as numeric(18,2)) as [% libre]
 from #discos
-where libre_gb < 30 and (libre_gb / tamaño_gb) < 0.2
+where libre_gb < 30 and (libre_gb / tamaï¿½o_gb) < 0.2
 order by libre_gb
 */
 --======================================================================================================
